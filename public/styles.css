@@ -1,0 +1,60 @@
+@font-face {
+    font-family: 'Blame';
+    src: url('./assets/fonts/BLAME.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+  }
+  /* Utility class */
+  .font-blame {
+    font-family: 'Blame', sans-serif !important;
+  }
+  
+  /* Thin custom scrollbar */
+.scrollbar-thin { scrollbar-width: thin; }
+.scrollbar-thumb-gray-700 { scrollbar-color: #374151 transparent; }
+.scrollbar-thin::-webkit-scrollbar { width: 6px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background-color: #374151; border-radius: 3px; }
+/* put the Vanta.js canvas behind your image */
+#vanta-bg canvas {
+    background: transparent !important;
+  }
+  
+  body {
+    margin: 0;
+    padding: 0;
+    background-image: url('./assets/my-bg.jpg');
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+    background-color: #000; /* fallback */
+  }
+/* Make Web3Modal just a centered popup, not full-screen */
+
+.web3modal-wrapper {
+    /* remove the dark full-screen backdrop */
+    background: transparent !important;
+    /* size to fit the modal content */
+    width: auto !important;
+    height: auto !important;
+    /* position it centered in the viewport */
+    position: fixed !important;
+    top: 30% !important;
+    left: 50% !important;
+    transform: translate(-50%, -30%) !important;
+    /* ensure it floats above everything */
+    z-index: 9999 !important;
+    /* allow clicks outside to close if you want */
+    pointer-events: none;
+  }
+  
+  /* re-enable pointer events on the modal itself */
+  .web3modal-modal {
+    pointer-events: auto !important;
+    /* optional: add a slight drop shadow */
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2) !important;
+  }
+  
+  
+  

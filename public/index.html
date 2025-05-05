@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" href="assets/favicon.ico" type="image/x-icon" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>GBlend Whisper Chat</title>
+   
+  <!-- Tailwind CSS (dev only) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- three.js & Vanta.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r121/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.net.min.js"></script>
+  <!-- Lenis smooth‐scroll -->
+  <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.11/bundled/lenis.min.js"></script>
+  <!-- GSAP animations -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+  <!-- WalletConnect & Ethers -->
+  <script src="https://cdn.jsdelivr.net/npm/@walletconnect/ethereum-provider@1.0.8/dist/umd/index.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+
+  <!-- Blame font -->
+  <style>
+    @font-face {
+      font-family: 'Blame';
+      src: url('assets/fonts/Blame.ttf') format('truetype');
+    }
+    body { font-family: 'Blame', sans-serif; }
+  </style>
+
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    #vanta-bg { position: fixed; top:0; left:0; width:100%; height:100%; z-index:-1; }
+  </style>
+</head>
+<body class="antialiased overflow-hidden bg-gray-900 text-gray-100">
+
+  <!-- Vanta background -->
+  <div id="vanta-bg"></div>
+
+  <!-- NAVBAR -->
+  <nav class="fixed top-0 left-0 w-full bg-black bg-opacity-70 backdrop-blur-md z-30 flex items-center justify-between px-6 py-3">
+    <div class="text-red-500 text-2xl font-bold"> GBlend Whisper </div>
+    <div class="space-x-4">
+      <button id="profileBtn"
+              class="text-white hover:text-gray-300 font-semibold">
+        Profile
+      </button>
+      <a href="leaderboard.html"
+         class="text-white hover:text-gray-300 font-semibold">
+        Leaderboard
+      </a>
+    </div>
+  </nav>
+
+  <!-- ERROR MODAL -->
+  <div id="error-modal" class="hidden fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden w-11/12 max-w-sm">
+      <div class="p-6">
+        <h3 id="error-modal-title" class="text-xl font-semibold text-gray-900 mb-2"></h3>
+        <p id="error-modal-message" class="text-gray-700 mb-6"></p>
+        <div class="flex justify-center space-x-4">
+          <button id="modal-primary-btn"
+                  class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition">
+          </button>
+          <button id="modal-secondary-btn"
+                  class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-900 rounded-lg font-semibold transition">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILE MODAL -->
+  <div id="profileModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-gray-800 rounded-lg p-6 w-80 text-center relative">
+      <button id="closeProfile" class="absolute top-2 right-2 text-gray-400 hover:text-gray-200">✕</button>
+      <h2 class="text-2xl font-bold text-white mb-4">Profile</h2>
+      <img id="profilePic"
+           class="mx-auto w-24 h-24 rounded-full mb-4 border-2 border-red-500"
+           src="assets/default-avatar.jpg"
+           alt="Profile picture">
+      <p id="modalAddr" class="text-sm text-gray-300 mb-2 break-all"></p>
+      <p id="modalCount" class="text-lg text-white font-semibold"></p>
+    </div>
+  </div>
+
+  <!-- NETWORK BANNER -->
+  <div id="network-error"
+       class="hidden fixed top-16 left-1/2 transform -translate-x-1/2 z-30 px-6 py-3 bg-red-600 text-white rounded-lg shadow-lg">
+    ⚠️ Please switch your wallet network to Fluent Devnet.
+  </div>
+
+  <!-- CONNECT OVERLAY -->
+  <div id="connect-container"
+       class="fixed inset-0 flex flex-col items-center justify-center bg-black bg-opacity-75 z-20 p-6 pt-32 text-center">
+    <h1 class="text-5xl text-red-500 mb-4">FLUENOBI WORLD  </h1>
+    <p class="mb-8 text-gray-300 max-w-md">
+      Connect your wallet to whisper and Climb The Leaderboard.
+    </p>
+    <button id="connectBtn"
+            class="bg-red-600 hover:bg-red-700 text-white font-semibold px-8 py-4 rounded-lg transition">
+      Connect Wallet
+    </button>
+  </div>
+
+  <!-- CHAT UI -->
+  <div id="chat-container"
+       class="hidden relative z-10 max-w-xl mx-auto mt-32 bg-black bg-opacity-50 backdrop-blur-lg rounded-2xl shadow-2xl overflow-hidden">
+
+    <header class="p-6 text-center">
+      <h2 class="text-3xl text-red-500 mb-2">Whispers</h2>
+      <p class="text-gray-300 mb-4">Only the stealthiest get on the board.</p>
+    </header>
+
+    <div id="msgs" data-lenis-prevent
+         class="h-80 overflow-y-auto px-6 space-y-4 pb-4 scrollbar-thin scrollbar-thumb-gray-700">
+      <!-- messages here -->
+    </div>
+
+    <div class="flex items-center px-6 py-4 border-t border-gray-700">
+      <textarea id="msgTxt"
+                rows="2" maxlength="128"
+                class="flex-1 mr-4 p-3 bg-gray-800 bg-opacity-60 rounded-xl placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 transition"
+                placeholder="Type your whisper…"></textarea>
+      <button id="postBtn"
+              class="px-5 py-3 bg-red-500 hover:bg-red-600 rounded-xl font-semibold transition">
+        Whisper
+      </button>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="fixed bottom-0 w-full text-center text-gray-500 p-2 z-10">
+    © 2025 Fluenobi · <a href="https://x.com/Fluenobi_" class="underline hover:text-gray-200">Follow us</a>
+  </footer>
+
+  <!-- Vanta.js init -->
+  <script>
+    VANTA.NET({
+      el: "#vanta-bg",
+      backgroundAlpha: 0.3,
+      color: 0xff3333,
+      points: 12.0,
+      maxDistance: 20.0,
+      spacing: 18.0
+    });
+  </script>
+
+  <!-- Lenis init -->
+  <script>
+    const lenis = new Lenis({ duration:1.2, easing:t=>1-Math.pow(1-t,3) });
+    function raf(t){ lenis.raf(t); requestAnimationFrame(raf) }
+    requestAnimationFrame(raf);
+  </script>
+
+  <!-- App logic -->
+  <script src="app.js"></script>
+</body>
+</html>
